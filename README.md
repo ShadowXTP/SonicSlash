@@ -1,8 +1,6 @@
 
 # Sonic Slash
-    Sonic Slash is a Airbending Addon created for ProjectKorra 1.11.2 and Above!
-    The move is meant to be a improved version of an existing move called AirSlash,
-    with the biggest difference being the ability to lock onto your targets!
+Sonic Slash is a Airbending Addon created for ProjectKorra 1.11.2 and Above, the move is heavily inspired by the outdated addon AirSlash, with the biggest difference being the ability to lock onto your targets! The homing attack and the original slash have two different damage options, with the default having the homing attack dealing less damage than the regular slash.
 
 # Config
     Cooldown: 3000
