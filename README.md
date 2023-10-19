@@ -12,7 +12,7 @@ Sonic Slash is a Airbending Addon created for ProjectKorra 1.11.2 and Above, the
 - Duration: Refers to how long the slash lasts, this affects the range of the move.
 - Damage: The damage of the airbending slash
 - Tracker Damage: The damage of the homing attack.
-- Tracking Range: Tracking Range referes to how big the radius is for the move to track its targets, anything outside of the radius won't be tracked.
+- Tracking Range: Tracking Range refers to how big the radius is for the move to track its targets, anything outside of the radius won't be tracked.
 
 # Requirements
 This addon requires the following plugins:
