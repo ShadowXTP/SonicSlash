@@ -48,6 +48,10 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
     private long cooldown;
 
+    private double radius;
+
+    //public double speed = ConfigManager.getConfig().getDouble("ExtraAbilities.ShadowTP.SonicSlash.Speed");
+
     public SonicSlash(Player player) {
         super(player);
         location = player.getEyeLocation();
@@ -55,14 +59,12 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
         direction.multiply(0.8);
 
         cooldown = ConfigManager.getConfig().getLong("ExtraAbilities.ShadowTP.SonicSlash.Cooldown");
+        radius = ConfigManager.getConfig().getLong("ExtraAbilities.ShadowTP.SonicSlash.Radius");
         bPlayer.addCooldown(this);
         distanceTravelled = 0;
         hurt = new HashSet<>();
         startTime = System.currentTimeMillis(); // Initialize the start time
         start();
-
-
-
     }
 
     @Override
@@ -71,7 +73,6 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
             remove();
             return;
         }
-
 
         if (location.getBlock().getType().isSolid() || System.currentTimeMillis() - startTime > LIFETIME) {
             remove();
@@ -125,7 +126,8 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
 
     public void affectTargets() {
-        List<Entity> targets = GeneralMethods.getEntitiesAroundPoint(location, 1.5);
+        //line below = hitbox keeth
+        List<Entity> targets = GeneralMethods.getEntitiesAroundPoint(location, radius);
         for (Entity target : targets) {
             if (target.getUniqueId() == player.getUniqueId()) {
                 continue;
@@ -202,16 +204,17 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
         perm = new Permission("bending.ability.SonicSlash");
         perm.setDefault(PermissionDefault.OP);
         ProjectKorra.plugin.getServer().getPluginManager().addPermission(perm);
-        System.out.println("SoncSlash Addon loaded");
+        System.out.println("SonicSlash Addon loaded");
 
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Cooldown", 3000);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Duration", 1000);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Damage", 2);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackingRange", 15);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackerDamage", 1);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Radius", 1);
+        //ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Speed", 0.8);
 
         ConfigManager.defaultConfig.save();
-
     }
 
     @Override
@@ -237,7 +240,7 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
     @Override
     public String getVersion(){
-        return "1.3";
+        return "1.4";
     }
 
     @Override

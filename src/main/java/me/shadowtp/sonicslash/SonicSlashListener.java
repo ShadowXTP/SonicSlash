@@ -25,30 +25,52 @@ public class SonicSlashListener implements Listener {
         }
     }
 
+    /*
+    MY CODE IS DISGUSTING TO LOOK AT, SORRY
+     */
+
+
     @EventHandler
     public void onSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
         SonicSlash SonicSlash = CoreAbility.getAbility(player, SonicSlash.class);
 
+        // > CODE FOR HOLD SNEAK
         if (event.isSneaking()) {
             // Player pressed the shift key.
             if (SonicSlash != null) {
                 SonicSlash.sneaking = true;
-                SonicSlash.sneakStartTime = System.currentTimeMillis();
+                SonicSlash.setTrackingMode(true);
+            }
+        } else {
+                    SonicSlash.remove();
+                }
+
+
+
+        /*
+
+        > CODE FOR TAP SNEAK
+
+        if (event.isSneaking()) {
+            // Player pressed the shift key.
+            if (SonicSlash != null) {
+                SonicSlash.sneaking = true;
+                //SonicSlash.sneakStartTime = System.currentTimeMillis();
             }
         } else {
             // Player released the shift key.
+
             if (SonicSlash != null) {
                 long sneakDuration = System.currentTimeMillis() - SonicSlash.sneakStartTime;
                 if (sneakDuration < REQUIRED_SNEAK_DURATION) {
                     // Enter tracking mode if sneak duration is short.
                     SonicSlash.setTrackingMode(true);
                 } else {
-                    // Remove the ability if sneak duration exceeds 1 second.
-                    SonicSlash.remove();
-                }
-            }
+            // Remove the ability if the player is not sneaking
+            SonicSlash.remove();
         }
-    }
 
+         */
+    }
 }
