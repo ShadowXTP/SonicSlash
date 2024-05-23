@@ -8,6 +8,8 @@ Sonic Slash is a Airbending Addon created for ProjectKorra 1.11.2 and Above, the
     Damage: 3
     TrackerDamage: 1
     TrackingRange: 15
+    Radius: 1.0
+    Speed: 1.5
 - Cooldown: Cooldown refers to the cooldown period between uses of the move.
 - Duration: Refers to how long the slash lasts, this affects the range of the move.
 - Damage: The damage of the airbending slash
