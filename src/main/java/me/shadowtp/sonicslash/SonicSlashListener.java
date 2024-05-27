@@ -42,11 +42,7 @@ public class SonicSlashListener implements Listener {
                 SonicSlash.sneaking = true;
                 SonicSlash.setTrackingMode(true);
             }
-        } else {
-                    SonicSlash.remove();
-                }
-
-
+        }
 
         /*
 

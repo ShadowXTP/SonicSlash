@@ -3,8 +3,10 @@ package me.shadowtp.sonicslash;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.configuration.ConfigManager;
 import com.projectkorra.projectkorra.util.DamageHandler;
+import com.projectkorra.projectkorra.waterbending.blood.Bloodbending;
 import me.simplicitee.project.addons.util.SoundAbility;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -14,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
@@ -21,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.bukkit.Sound.ENTITY_IRON_GOLEM_STEP;
-import static org.bukkit.Sound.ENTITY_SHULKER_BULLET_HURT;
+import static org.bukkit.Sound.*;
+import static org.bukkit.potion.PotionEffectType.*;
 
 public class SonicSlash extends SoundAbility implements AddonAbility {
     public boolean sneaking;
@@ -50,13 +54,19 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
     private double radius;
 
-    //public double speed = ConfigManager.getConfig().getDouble("ExtraAbilities.ShadowTP.SonicSlash.Speed");
+    public double bspeed = ConfigManager.getConfig().getDouble("ExtraAbilities.ShadowTP.SonicSlash.Speed");
+    public double cspeed = ConfigManager.getConfig().getDouble("ExtraAbilities.ShadowTP.SonicSlash.ControlledSpeed");
+
+    public int lduration = ConfigManager.getConfig().getInt("ExtraAbilities.ShadowTP.SonicSlash.LevitationDuration");
+
+    public int dduration = ConfigManager.getConfig().getInt("ExtraAbilities.ShadowTP.SonicSlash.DarknessDuration");
+
 
     public SonicSlash(Player player) {
         super(player);
         location = player.getEyeLocation();
         direction = player.getLocation().getDirection();
-        direction.multiply(0.8);
+        direction.multiply(bspeed);
 
         cooldown = ConfigManager.getConfig().getLong("ExtraAbilities.ShadowTP.SonicSlash.Cooldown");
         radius = ConfigManager.getConfig().getLong("ExtraAbilities.ShadowTP.SonicSlash.Radius");
@@ -69,10 +79,12 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
     @Override
     public void progress() {
+
         if (!bPlayer.canBendIgnoreBindsCooldowns(this)) {
             remove();
             return;
         }
+
 
         if (location.getBlock().getType().isSolid() || System.currentTimeMillis() - startTime > LIFETIME) {
             remove();
@@ -80,11 +92,15 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
         }
 
         if (trackingMode) {
+            /*
             Entity nearestEntity = getNearestEntity();
             if (nearestEntity != null && !hurt.contains(nearestEntity)) {
                 Vector entityDirection = nearestEntity.getLocation().toVector().subtract(location.toVector()).normalize();
                 direction = entityDirection.multiply(0.8);
             }
+            */
+            direction = player.getEyeLocation().getDirection();
+            direction.multiply(cspeed);
             location.add(direction);
             spawnSonicExplosionParticles(location);
             if (ThreadLocalRandom.current().nextInt(3) == 0){
@@ -97,6 +113,7 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
             spawnSlash(location);
         }
 
+
         affectTargets();
 
         if (ThreadLocalRandom.current().nextInt(6) == 0) {
@@ -108,7 +125,7 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
     }
 
     private void spawnSonicExplosionParticles(Location loc) {
-        loc.getWorld().spawnParticle(Particle.valueOf("SONIC_BOOM"), loc, 1, 0.3, 0.2, 0.2, 0, null);
+            loc.getWorld().spawnParticle(Particle.valueOf("GLOW"), loc, 3, 0.3, 0.2, 0.2, 0, null);
     }
 
     private void spawnAir(Location loc) {
@@ -120,9 +137,10 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
     }
 
     public void playEchoSound(Location loc) {
-        player.getWorld().playSound(loc, ENTITY_IRON_GOLEM_STEP,  2 , 0);
-        player.getWorld().playSound(loc, ENTITY_SHULKER_BULLET_HURT, 2, 1.6f);
+            player.getWorld().playSound(loc, ENTITY_IRON_GOLEM_STEP,  4 , 1);
+            player.getWorld().playSound(loc, BLOCK_AMETHYST_BLOCK_FALL, 2, 1.6f);
     }
+
 
 
     public void affectTargets() {
@@ -139,15 +157,22 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
                 hurt.add(target);
                 target.setVelocity(direction);
             }else if (!hurt.contains(target) && trackingMode == true) {
+                LivingEntity livingEntity = (LivingEntity) target;
+                livingEntity.addPotionEffect(new PotionEffect(DARKNESS, dduration, 25));
+                livingEntity.addPotionEffect(new PotionEffect(LEVITATION, lduration, 1));
+                livingEntity.addPotionEffect(new PotionEffect(LEVITATION, lduration, 1));
                 DamageHandler.damageEntity(target, TRACKERDAMAGE, this);
-                hurt.add(target);
                 target.setVelocity(direction);
+                //Player targetPlayer = (Player) target;
+                hurt.add(target);
             }
         }
     }
 
     public void setTrackingMode(boolean trackingMode) {
-        this.trackingMode = trackingMode;
+        if (bPlayer.canBendIgnoreCooldowns(this)) {
+            this.trackingMode = trackingMode;
+        }
     }
 
     public Entity getNearestEntity() {
@@ -204,16 +229,17 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
         perm = new Permission("bending.ability.SonicSlash");
         perm.setDefault(PermissionDefault.OP);
         ProjectKorra.plugin.getServer().getPluginManager().addPermission(perm);
-        System.out.println("SonicSlash Addon loaded");
 
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Cooldown", 3000);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Duration", 1000);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Damage", 2);
-        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackingRange", 15);
-        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackerDamage", 1);
         ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Radius", 1);
-        //ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Speed", 0.8);
-
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.Speed", 1.2);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackingRange", 15);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.TrackerDamage", 0.01);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.ControlledSpeed", 0.8);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.LevitationDuration", 30);
+        ConfigManager.getConfig().addDefault("ExtraAbilities.ShadowTP.SonicSlash.DarknessDuration", 80);
         ConfigManager.defaultConfig.save();
     }
 
@@ -235,16 +261,17 @@ public class SonicSlash extends SoundAbility implements AddonAbility {
 
     @Override
     public String getDescription() {
-        return "A homing current of sound, tapping shift turns the blast into a homing attack that does less damage";
+        return "A single slash of air capable of delivering devastating damage or disorientate enemies";
     }
 
     @Override
     public String getVersion(){
-        return "1.4";
+        return "1.5";
     }
 
     @Override
     public String getInstructions(){
-        return "Left Click to fire a slash, Tap Sneak to home in on the closest entity";
+        return "Left Click to fire a Slash, Hold Sneak to Disorientate and Control" ;
+
     }
 }
